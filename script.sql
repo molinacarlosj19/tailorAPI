@@ -16,6 +16,15 @@ CREATE TABLE products (
     CONSTRAINT positive_unit_price CHECK (unit_price >= 0)
 );
 
+-- Create a table for managing product orders and products relationship
+CREATE TABLE product_order_products (
+    order_id INTEGER REFERENCES product_orders(order_id),
+    product_id INTEGER REFERENCES products(product_id),
+    quantity INTEGER NOT NULL,
+    PRIMARY KEY (order_id, product_id),
+    CONSTRAINT positive_quantity CHECK (quantity >= 0)
+);
+
 -- Create a table for managing invoices
 CREATE TABLE invoices (
     invoice_id SERIAL PRIMARY KEY,
