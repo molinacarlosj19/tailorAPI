@@ -1,12 +1,12 @@
 // services/ProductService.js
-const { Pool } = require('pg');
-const { Product } = require('../entities/Product');
+const pool = require('../config/database');
+const { Product } = require('../models/Product');
+
+console.log('ProductService loaded');
 
 class ProductService {
     constructor() {
-        this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL
-        });
+        this.pool = pool;
     }
 
     async createProduct(productName, unitPrice, expirationDate) {
@@ -23,6 +23,7 @@ class ProductService {
     }
 
     async getAllProducts() {
+        console.log("Started getAllProducts ProductService");
         const client = await this.pool.connect();
         try {
             const result = await client.query('SELECT * FROM products');
@@ -74,5 +75,4 @@ class ProductService {
         }
     }
 }
-
 module.exports = ProductService;

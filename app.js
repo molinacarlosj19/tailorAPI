@@ -2,11 +2,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const productRoutes = require('./routes/productRoutes');
+const productOrderRoutes = require('./routes/productOrderRoutes');
+
 // Create an instance of Express app
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
+
+
+// Middleware to parse JSON request bodies
+//app.use(express.json());
+
+// Mount routes
+app.use('/api/products', productRoutes);  // Mount product routes under /api/products
+app.use('/api/product-orders', productOrderRoutes);  // Mount product order routes under /api/product-orders
 
 // Sample route
 app.get('/', (req, res) => {
@@ -30,10 +41,16 @@ app.post('/api/users', (req, res) => {
   res.status(201).json(newUser);
 });
 
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something went wrong!');
+});
+
+// Define a catch-all route for handling unknown endpoints
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Start the server

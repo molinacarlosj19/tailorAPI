@@ -17,10 +17,14 @@ class ProductController {
     }
 
     async getAllProducts(req, res) {
+        console.log("Loaded ProductController");
         try {
             const products = await this.productService.getAllProducts();
+            console.log("Lenght Product " + products.length());
+            console.log("Before res.json(products) ProductController");
             res.json(products);
         } catch (error) {
+            console.log("Error getAllProducts ProductController");
             res.status(500).json({ message: error.message });
         }
     }

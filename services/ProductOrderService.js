@@ -1,13 +1,10 @@
 // services/ProductOrderService.js
-const { Pool } = require('pg');
-const { ProductOrder } = require('../entities/ProductOrder');
-const { ProductService } = require('./ProductService');
+const pool = require('../config/database');
+const ProductService = require('./ProductService');
 
 class ProductOrderService {
     constructor() {
-        this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL
-        });
+        this.pool = pool;
         this.productService = new ProductService();
     }
 
