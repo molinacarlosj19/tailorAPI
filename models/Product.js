@@ -1,8 +1,7 @@
-// entities/Product.js
 class Product {
-    constructor(productName, unitPrice, expirationDate) {
+    constructor(productCode, productName, expirationDate) {
+        this.productCode = productCode;
         this.productName = productName;
-        this.unitPrice = unitPrice;
         this.expirationDate = expirationDate;
     }
 }
