@@ -46,3 +46,7 @@ CREATE TABLE invoice_line_items (
     CONSTRAINT positive_unit_price CHECK (unit_price >= 0),
     CONSTRAINT positive_total_amount CHECK (total_amount >= 0)
 );
+
+ALTER TABLE products ADD COLUMN product_code VARCHAR(50) UNIQUE NOT NULL;
+
+ALTER TABLE products DROP COLUMN unit_price;

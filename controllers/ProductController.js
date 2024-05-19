@@ -1,4 +1,3 @@
-// controllers/ProductController.js
 const ProductService = require('../services/ProductService');
 
 class ProductController {
@@ -6,57 +5,53 @@ class ProductController {
         this.productService = new ProductService();
     }
 
-    async createProduct(req, res) {
+    async createProduct(req, res, next) {
         try {
-            const { productName, unitPrice, expirationDate } = req.body;
-            const product = await this.productService.createProduct(productName, unitPrice, expirationDate);
-            res.status(201).json(product);
+            const { productCode, productName, expirationDate } = req.body;
+            const newProduct = await this.productService.createProduct(productCode, productName, expirationDate);
+            res.status(201).json(newProduct);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    async getAllProducts(req, res) {
-        console.log("Loaded ProductController");
+    async getAllProducts(req, res, next) {
         try {
             const products = await this.productService.getAllProducts();
-            console.log("Lenght Product " + products.length());
-            console.log("Before res.json(products) ProductController");
             res.json(products);
         } catch (error) {
-            console.log("Error getAllProducts ProductController");
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    async getProductById(req, res) {
+    async getProductById(req, res, next) {
         try {
-            const productId = req.params.id;
-            const product = await this.productService.getProductById(productId);
+            const { id } = req.params;
+            const product = await this.productService.getProductById(id);
             res.json(product);
         } catch (error) {
-            res.status(404).json({ message: error.message });
+            next(error);
         }
     }
 
-    async updateProduct(req, res) {
+    async updateProduct(req, res, next) {
         try {
-            const productId = req.params.id;
+            const { id } = req.params;
             const newData = req.body;
-            const updatedProduct = await this.productService.updateProduct(productId, newData);
+            const updatedProduct = await this.productService.updateProduct(id, newData);
             res.json(updatedProduct);
         } catch (error) {
-            res.status(404).json({ message: error.message });
+            next(error);
         }
     }
 
-    async deleteProduct(req, res) {
+    async deleteProduct(req, res, next) {
         try {
-            const productId = req.params.id;
-            await this.productService.deleteProduct(productId);
+            const { id } = req.params;
+            await this.productService.deleteProduct(id);
             res.status(204).send();
         } catch (error) {
-            res.status(404).json({ message: error.message });
+            next(error);
         }
     }
 }
