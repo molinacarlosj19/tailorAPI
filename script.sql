@@ -50,3 +50,18 @@ CREATE TABLE invoice_line_items (
 ALTER TABLE products ADD COLUMN product_code VARCHAR(50) UNIQUE NOT NULL;
 
 ALTER TABLE products DROP COLUMN unit_price;
+
+-- Drop unnecessary columns from product_orders table
+ALTER TABLE product_orders
+    DROP COLUMN total_amount,
+    DROP COLUMN status;
+
+-- Add new columns to product_orders table
+ALTER TABLE product_orders
+    ADD COLUMN order_number VARCHAR(50) NOT NULL,
+    ADD COLUMN time_in TIME NOT NULL,
+    ADD COLUMN time_out TIME NOT NULL;
+
+-- Adjust product_order_products table if necessary
+-- (Assuming no changes needed for now)
+
