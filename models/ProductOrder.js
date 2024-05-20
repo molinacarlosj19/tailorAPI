@@ -1,9 +1,9 @@
-// entities/ProductOrder.js
 class ProductOrder {
-    constructor(orderDate, totalAmount, status, products = []) {
+    constructor(orderDate, orderNumber, timeIn, timeOut, products = []) {
         this.orderDate = orderDate;
-        this.totalAmount = totalAmount;
-        this.status = status;
+        this.orderNumber = orderNumber;
+        this.timeIn = timeIn;
+        this.timeOut = timeOut;
         this.products = products;
     }
 
