@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const productRoutes = require('./routes/productRoutes');
 const productOrderRoutes = require('./routes/productOrderRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+
 
 const app = express();
 
@@ -9,6 +11,7 @@ app.use(bodyParser.json());
 
 app.use('/api/products', productRoutes);
 app.use('/api/product-orders', productOrderRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello, world!');
