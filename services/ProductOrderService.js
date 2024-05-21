@@ -1,5 +1,6 @@
 const pool = require('../config/database');
 const ProductOrder = require('../entities/ProductOrder');
+const ProductOrderProduct = require('../entities/ProductOrderProduct');
 const ProductService = require('./ProductService');
 
 class ProductOrderService {
@@ -13,24 +14,20 @@ class ProductOrderService {
         try {
             await client.query('BEGIN');
 
-            const insertOrderQuery = `
-                INSERT INTO product_orders (order_date, order_number, time_in, time_out)
-                VALUES ($1, $2, $3, $4)
-                RETURNING order_id`;
+            const insertOrderQuery = 'INSERT INTO product_orders (order_date, order_number, time_in, time_out) VALUES ($1, $2, $3, $4) RETURNING order_id';
             const insertOrderValues = [orderDate, orderNumber, timeIn, timeOut];
             const { rows: [{ order_id }] } = await client.query(insertOrderQuery, insertOrderValues);
 
             for (const productData of productsData) {
-                const insertOrderProductQuery = `
-                    INSERT INTO product_order_products (order_id, product_id, quantity)
-                    VALUES ($1, $2, $3)`;
-                const insertOrderProductValues = [order_id, productData.productId, productData.quantity];
+                const insertOrderProductQuery = 'INSERT INTO product_order_products (order_id, product_id, quantity, expiration_date) VALUES ($1, $2, $3, $4)';
+                const insertOrderProductValues = [order_id, productData.productId, productData.quantity, productData.expirationDate];
                 await client.query(insertOrderProductQuery, insertOrderProductValues);
             }
 
             await client.query('COMMIT');
 
-            return new ProductOrder(orderDate, orderNumber, timeIn, timeOut, productsData);
+            const productOrder = new ProductOrder(orderDate, orderNumber, timeIn, timeOut, productsData.map(pd => new ProductOrderProduct(pd.productId, pd.quantity, pd.expirationDate)));
+            return productOrder;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;

@@ -1,5 +1,5 @@
 const pool = require('../config/database');
-const Product = require('../models/Product');
+const Product = require('../entities/Product');
 
 class ProductService {
     constructor() {
