@@ -1,12 +1,10 @@
 const pool = require('../config/database');
 const ProductOrder = require('../entities/ProductOrder');
 const ProductOrderProduct = require('../entities/ProductOrderProduct');
-const ProductService = require('./ProductService');
 
 class ProductOrderService {
     constructor() {
         this.pool = pool;
-        this.productService = new ProductService();
     }
 
     async createProductOrder(orderDate, orderNumber, timeIn, timeOut, productsData) {
@@ -26,8 +24,7 @@ class ProductOrderService {
 
             await client.query('COMMIT');
 
-            const productOrder = new ProductOrder(orderDate, orderNumber, timeIn, timeOut, productsData.map(pd => new ProductOrderProduct(pd.productId, pd.quantity, pd.expirationDate)));
-            return productOrder;
+            return new ProductOrder(order_id, orderDate, orderNumber, timeIn, timeOut);
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -36,61 +33,87 @@ class ProductOrderService {
         }
     }
 
-    async getAllProductOrders() {
-        const client = await this.pool.connect();
-        try {
-            const result = await client.query('SELECT * FROM product_orders');
-            return result.rows.map(row => new ProductOrder(row.order_date, row.order_number, row.time_in, row.time_out));
-        } finally {
-            client.release();
-        }
-    }
-
     async getProductOrderById(orderId) {
         const client = await this.pool.connect();
         try {
-            const orderResult = await client.query('SELECT * FROM product_orders WHERE order_id = $1', [orderId]);
-            const productResult = await client.query('SELECT * FROM product_order_products WHERE order_id = $1', [orderId]);
-
-            if (orderResult.rows.length === 0) {
+            const orderQuery = 'SELECT * FROM product_orders WHERE order_id = $1';
+            const orderResult = await client.query(orderQuery, [orderId]);
+            const orderData = orderResult.rows[0];
+            if (!orderData) {
                 throw new Error('Order not found');
             }
 
-            const orderData = orderResult.rows[0];
-            const products = productResult.rows.map(row => ({ productId: row.product_id, quantity: row.quantity }));
-            
-            return new ProductOrder(orderData.order_date, orderData.order_number, orderData.time_in, orderData.time_out, products);
+            const productsQuery = 'SELECT * FROM product_order_products WHERE order_id = $1';
+            const productsResult = await client.query(productsQuery, [orderId]);
+            const productsData = productsResult.rows;
+
+            const productOrder = new ProductOrder(orderData.order_id, orderData.order_date, orderData.order_number, orderData.time_in, orderData.time_out);
+            productOrder.products = productsData.map(product => new ProductOrderProduct(
+                product.product_order_product_id,
+                product.order_id,
+                product.product_id,
+                product.quantity,
+                product.expiration_date
+            ));
+
+            return productOrder;
         } finally {
             client.release();
         }
     }
 
-    async updateProductOrder(orderId, orderDate, orderNumber, timeIn, timeOut, productsData) {
+    async getAllProductOrders() {
+        const client = await this.pool.connect();
+        try {
+            const ordersQuery = 'SELECT * FROM product_orders';
+            const ordersResult = await client.query(ordersQuery);
+            const ordersData = ordersResult.rows;
+
+            const orders = [];
+            for (const orderData of ordersData) {
+                const productsQuery = 'SELECT * FROM product_order_products WHERE order_id = $1';
+                const productsResult = await client.query(productsQuery, [orderData.order_id]);
+                const productsData = productsResult.rows;
+
+                const productOrder = new ProductOrder(orderData.order_id, orderData.order_date, orderData.order_number, orderData.time_in, orderData.time_out);
+                productOrder.products = productsData.map(product => new ProductOrderProduct(
+                    product.product_order_product_id,
+                    product.order_id,
+                    product.product_id,
+                    product.quantity,
+                    product.expiration_date
+                ));
+
+                orders.push(productOrder);
+            }
+
+            return orders;
+        } finally {
+            client.release();
+        }
+    }
+
+    async updateProductOrder(orderId, newData) {
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
 
-            const updateOrderQuery = `
-                UPDATE product_orders
-                SET order_date = $1, order_number = $2, time_in = $3, time_out = $4
-                WHERE order_id = $5`;
-            const updateOrderValues = [orderDate, orderNumber, timeIn, timeOut, orderId];
+            const updateOrderQuery = 'UPDATE product_orders SET order_date = $1, order_number = $2, time_in = $3, time_out = $4 WHERE order_id = $5';
+            const updateOrderValues = [newData.orderDate, newData.orderNumber, newData.timeIn, newData.timeOut, orderId];
             await client.query(updateOrderQuery, updateOrderValues);
 
-            const deleteOrderProductsQuery = 'DELETE FROM product_order_products WHERE order_id = $1';
-            await client.query(deleteOrderProductsQuery, [orderId]);
+            const deleteProductsQuery = 'DELETE FROM product_order_products WHERE order_id = $1';
+            await client.query(deleteProductsQuery, [orderId]);
 
-            for (const productData of productsData) {
-                const insertOrderProductQuery = `
-                    INSERT INTO product_order_products (order_id, product_id, quantity)
-                    VALUES ($1, $2, $3)`;
-                const insertOrderProductValues = [orderId, productData.productId, productData.quantity];
+            for (const productData of newData.products) {
+                const insertOrderProductQuery = 'INSERT INTO product_order_products (order_id, product_id, quantity, expiration_date) VALUES ($1, $2, $3, $4)';
+                const insertOrderProductValues = [orderId, productData.productId, productData.quantity, productData.expirationDate];
                 await client.query(insertOrderProductQuery, insertOrderProductValues);
             }
 
             await client.query('COMMIT');
 
-            return new ProductOrder(orderDate, orderNumber, timeIn, timeOut, productsData);
+            return new ProductOrder(orderId, newData.orderDate, newData.orderNumber, newData.timeIn, newData.timeOut);
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -103,9 +126,8 @@ class ProductOrderService {
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
-
-            const deleteOrderProductsQuery = 'DELETE FROM product_order_products WHERE order_id = $1';
-            await client.query(deleteOrderProductsQuery, [orderId]);
+            const deleteProductsQuery = 'DELETE FROM product_order_products WHERE order_id = $1';
+            await client.query(deleteProductsQuery, [orderId]);
 
             const deleteOrderQuery = 'DELETE FROM product_orders WHERE order_id = $1';
             await client.query(deleteOrderQuery, [orderId]);

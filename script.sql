@@ -1,29 +1,42 @@
--- Create a table for managing product orders
+-- Drop existing tables if they exist, using CASCADE to drop dependent objects
+DROP TABLE IF EXISTS invoice_product_sources CASCADE;
+DROP TABLE IF EXISTS product_order_products CASCADE;
+DROP TABLE IF EXISTS product_orders CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+
+-- Create the products table
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    product_code VARCHAR(50) NOT NULL,
+    product_name VARCHAR(100) NOT NULL
+);
+
+-- Create the product_orders table
 CREATE TABLE product_orders (
     order_id SERIAL PRIMARY KEY,
     order_date DATE NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(20) NOT NULL
+    order_number VARCHAR(50) NOT NULL,
+    time_in TIME NOT NULL,
+    time_out TIME NOT NULL
 );
 
--- Create a table for managing products
-CREATE TABLE products (
-    product_id SERIAL PRIMARY KEY,
-    product_name VARCHAR(100) NOT NULL,
-    unit_price DECIMAL(10, 2) NOT NULL,
-    expiration_date DATE NOT NULL,
-    CONSTRAINT unique_product_name UNIQUE (product_name),
-    CONSTRAINT positive_unit_price CHECK (unit_price >= 0)
-);
-
--- Create a table for managing product orders and products relationship
+-- Create the product_order_products table
 CREATE TABLE product_order_products (
-    order_id INTEGER REFERENCES product_orders(order_id),
-    product_id INTEGER REFERENCES products(product_id),
-    quantity INTEGER NOT NULL,
-    PRIMARY KEY (order_id, product_id),
-    CONSTRAINT positive_quantity CHECK (quantity >= 0)
+    product_order_product_id SERIAL PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    expiration_date DATE,
+    CONSTRAINT fk_order
+        FOREIGN KEY(order_id) 
+        REFERENCES product_orders(order_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_product
+        FOREIGN KEY(product_id) 
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
 );
+
 
 -- Invoice Table
 CREATE TABLE invoices (
@@ -78,5 +91,11 @@ ALTER TABLE product_orders
 
 ALTER TABLE invoice_line_items DROP COLUMN unit_price;
 ALTER TABLE invoice_line_items DROP COLUMN total_amount;
+
+-- Remove expirationDate from products if it exists
+ALTER TABLE products DROP COLUMN IF EXISTS expiration_date;
+
+-- Add expirationDate to product_order_products if it doesn't exist
+ALTER TABLE product_order_products ADD COLUMN expiration_date DATE;
 
 

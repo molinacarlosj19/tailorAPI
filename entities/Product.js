@@ -1,8 +1,8 @@
 class Product {
-    constructor(productCode, productName, expirationDate) {
+    constructor(productId, productCode, productName) {
+        this.productId = productId;
         this.productCode = productCode;
         this.productName = productName;
-        this.expirationDate = expirationDate;
     }
 }
 
