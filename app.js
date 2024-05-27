@@ -4,7 +4,6 @@ const productRoutes = require('./routes/productRoutes');
 const productOrderRoutes = require('./routes/productOrderRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 
-
 const app = express();
 
 app.use(bodyParser.json());

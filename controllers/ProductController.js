@@ -7,9 +7,9 @@ class ProductController {
 
     async createProduct(req, res, next) {
         try {
-            const { productCode, productName, expirationDate } = req.body;
-            const newProduct = await this.productService.createProduct(productCode, productName, expirationDate);
-            res.status(201).json(newProduct);
+            const { productCode, productName } = req.body;
+            const product = await this.productService.createProduct(productCode, productName);
+            res.status(201).json(product);
         } catch (error) {
             next(error);
         }
@@ -18,7 +18,7 @@ class ProductController {
     async getAllProducts(req, res, next) {
         try {
             const products = await this.productService.getAllProducts();
-            res.json(products);
+            res.status(200).json(products);
         } catch (error) {
             next(error);
         }
@@ -26,9 +26,9 @@ class ProductController {
 
     async getProductById(req, res, next) {
         try {
-            const { id } = req.params;
-            const product = await this.productService.getProductById(id);
-            res.json(product);
+            const productId = parseInt(req.params.id, 10);
+            const product = await this.productService.getProductById(productId);
+            res.status(200).json(product);
         } catch (error) {
             next(error);
         }
@@ -36,10 +36,10 @@ class ProductController {
 
     async updateProduct(req, res, next) {
         try {
-            const { id } = req.params;
+            const productId = parseInt(req.params.id, 10);
             const newData = req.body;
-            const updatedProduct = await this.productService.updateProduct(id, newData);
-            res.json(updatedProduct);
+            const updatedProduct = await this.productService.updateProduct(productId, newData);
+            res.status(200).json(updatedProduct);
         } catch (error) {
             next(error);
         }
@@ -47,8 +47,8 @@ class ProductController {
 
     async deleteProduct(req, res, next) {
         try {
-            const { id } = req.params;
-            await this.productService.deleteProduct(id);
+            const productId = parseInt(req.params.id, 10);
+            await this.productService.deleteProduct(productId);
             res.status(204).send();
         } catch (error) {
             next(error);

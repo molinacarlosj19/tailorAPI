@@ -4,6 +4,10 @@ const ProductOrderController = require('../controllers/ProductOrderController');
 const router = express.Router();
 const productOrderController = new ProductOrderController();
 
-router.post('/product-orders', (req, res) => productOrderController.createProductOrder(req, res));
+router.post('/', productOrderController.createProductOrder);
+router.get('/', productOrderController.getAllProductOrders);
+router.get('/:id', productOrderController.getProductOrderById);
+router.put('/:id', productOrderController.updateProductOrder);
+router.delete('/:id', productOrderController.deleteProductOrder);
 
 module.exports = router;
