@@ -1,6 +1,6 @@
-// entities/Invoice.js
 class Invoice {
-    constructor(invoiceDate, selector, checker, driver, receivedBy) {
+    constructor(invoiceId, invoiceDate, selector, checker, driver, receivedBy) {
+        this.invoiceId = invoiceId;
         this.invoiceDate = invoiceDate;
         this.selector = selector;
         this.checker = checker;

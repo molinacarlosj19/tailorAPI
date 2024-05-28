@@ -50,22 +50,28 @@ CREATE TABLE invoices (
 
 -- Invoice Line Items Table
 CREATE TABLE invoice_line_items (
-    line_item_id SERIAL PRIMARY KEY,
-    invoice_id INT REFERENCES invoices(invoice_id) ON DELETE CASCADE,
-    product_code VARCHAR(255) NOT NULL,
-    product_name VARCHAR(255) NOT NULL,
-    quantity INT NOT NULL,
-    product_order_id INT REFERENCES product_orders(order_id) ON DELETE CASCADE
+    invoice_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    PRIMARY KEY (invoice_id, product_id),
+    FOREIGN KEY (invoice_id) REFERENCES invoices (invoice_id),
+    FOREIGN KEY (product_id) REFERENCES products (product_id)
 );
+
 
 -- Create new table to track product sources for invoices
 CREATE TABLE invoice_product_sources (
-    invoice_product_source_id SERIAL PRIMARY KEY,
-    invoice_id INT REFERENCES invoices(invoice_id),
-    product_order_id INT REFERENCES product_orders(order_id),
-    product_id INT REFERENCES products(product_id),
-    quantity INT NOT NULL
+    invoice_id INTEGER NOT NULL,
+    product_order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    expiration_date DATE NOT NULL,
+    PRIMARY KEY (invoice_id, product_order_id, product_id),
+    FOREIGN KEY (invoice_id) REFERENCES invoices (invoice_id),
+    FOREIGN KEY (product_order_id) REFERENCES product_orders (order_id),
+    FOREIGN KEY (product_id) REFERENCES products (product_id)
 );
+
 
 -- Sample data manipulation example
 -- Let's assume we have already existing tables and the necessary products and orders

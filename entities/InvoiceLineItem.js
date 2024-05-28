@@ -1,5 +1,6 @@
 class InvoiceLineItem {
-    constructor(invoiceId, productId, quantity, sources = []) {
+    constructor(invoiceLineItemId, invoiceId, productId, quantity, sources = []) {
+        this.invoiceLineItemId = invoiceLineItemId;
         this.invoiceId = invoiceId;
         this.productId = productId;
         this.quantity = quantity;
