@@ -4,7 +4,7 @@ class InvoiceLineItem {
         this.invoiceId = invoiceId;
         this.productId = productId;
         this.quantity = quantity;
-        this.sources = sources; // New field for tracking sources
+        this.sources = sources;
     }
 }
 
