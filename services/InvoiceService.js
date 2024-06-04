@@ -13,7 +13,7 @@ class InvoiceService {
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
-
+    
             const insertInvoiceQuery = `
                 INSERT INTO invoices (invoice_date, selector, checker, driver, received_by)
                 VALUES ($1, $2, $3, $4, $5)
@@ -22,37 +22,37 @@ class InvoiceService {
             const insertInvoiceValues = [invoiceDate, selector, checker, driver, receivedBy];
             const { rows: [invoice] } = await client.query(insertInvoiceQuery, insertInvoiceValues);
             const invoiceId = invoice.invoice_id;
-
+    
             for (const product of products) {
                 let remainingQuantity = product.quantity;
                 const productSources = [];
-
+    
                 const productOrders = await this.getProductOrdersByProductId(client, product.productId);
                 for (const productOrder of productOrders) {
                     if (remainingQuantity <= 0) break;
                     const quantityToTake = Math.min(remainingQuantity, productOrder.quantity);
                     remainingQuantity -= quantityToTake;
-
+    
                     const insertProductSourceQuery = `
                         INSERT INTO invoice_product_sources (invoice_id, product_order_id, product_id, quantity, expiration_date)
                         VALUES ($1, $2, $3, $4, $5)
                     `;
                     const insertProductSourceValues = [invoiceId, productOrder.order_id, product.productId, quantityToTake, productOrder.expiration_date];
                     await client.query(insertProductSourceQuery, insertProductSourceValues);
-
+    
                     productSources.push({
                         productOrderId: productOrder.order_id,
                         quantity: quantityToTake,
                         expirationDate: productOrder.expiration_date
                     });
                 }
-
-                const invoiceLineItem = new InvoiceLineItem(invoiceId, product.productId, product.quantity, productSources);
-
+    
+                const invoiceLineItem = new InvoiceLineItem(null, invoiceId, product.productId, product.quantity, productSources);
+    
                 // Save the invoice line item
                 await this.saveInvoiceLineItem(client, invoiceLineItem);
             }
-
+    
             await client.query('COMMIT');
             return new Invoice(invoiceId, invoiceDate, selector, checker, driver, receivedBy);
         } catch (error) {
