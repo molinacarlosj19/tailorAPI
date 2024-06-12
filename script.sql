@@ -104,4 +104,19 @@ ALTER TABLE products DROP COLUMN IF EXISTS expiration_date;
 -- Add expirationDate to product_order_products if it doesn't exist
 ALTER TABLE product_order_products ADD COLUMN expiration_date DATE;
 
+-- Create roles table
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Create users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role_id INT,
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
 

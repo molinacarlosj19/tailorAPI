@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const cors = require('cors');
+
+const authRoutes = require('./routes/authRoutes'); 
 const { expressjwt: jwt } = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 const dotenv = require('dotenv');
@@ -40,9 +42,12 @@ const jwtCheck = jwt({
 // Protect routes with JWT middleware
 app.use('/api', jwtCheck);
 
+// Routes
+app.use('/auth', authRoutes); 
 app.use('/api/products', productRoutes);
 app.use('/api/product-orders', productOrderRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/invoice-line-items', invoiceLineItemRoutes);
 app.use('/api/invoice-line-items', invoiceLineItemRoutes);
 
 app.get('/', (req, res) => {
