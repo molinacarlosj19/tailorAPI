@@ -1,12 +1,17 @@
-// database.js
-const { Pool } = require('pg');
+const { Sequelize } = require('sequelize');
+const dotenv = require('dotenv');
 
-const pool = new Pool({
-  user: 'postgres', // Your PostgreSQL username
-  host: 'localhost', // Your PostgreSQL host
-  database: 'taylordb', // Your PostgreSQL database name
-  password: 'Dejesus28', // Your PostgreSQL password
-  port: 5432, // Your PostgreSQL port (default is 5432)
-});
+// Load environment variables from .env file
+dotenv.config();
 
-module.exports = pool;
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
+    {
+        host: process.env.DB_HOST,
+        dialect: process.env.DB_DIALECT
+    }
+);
+
+module.exports = sequelize;
