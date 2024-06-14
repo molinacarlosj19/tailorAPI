@@ -56,8 +56,12 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something went wrong!');
+    console.error(err.stack); // Detailed error stack logging
+    res.status(err.status || 500).json({
+        message: 'Something went wrong!',
+        error: err.message, // Provide error message
+        stack: err.stack // Provide stack trace for debugging
+    });
 });
 
 // 404 handler
