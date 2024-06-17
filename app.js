@@ -1,23 +1,21 @@
-// app.js
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const cors = require('cors');
-
-const authRoutes = require('./routes/authRoutes'); 
-const { expressjwt: jwt } = require('express-jwt');
-const jwksRsa = require('jwks-rsa');
 const dotenv = require('dotenv');
 
 // Load environment variables
 dotenv.config();
 
-// Import routes
+const authRoutes = require('./routes/authRoutes'); 
 const productRoutes = require('./routes/productRoutes');
 const productOrderRoutes = require('./routes/productOrderRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const invoiceLineItemRoutes = require('./routes/invoiceLineItemRoutes');
+const authMiddleware = require('./middlewares/authMiddleware');
+
+const { expressjwt: jwt } = require('express-jwt');
+const jwksRsa = require('jwks-rsa');
 
 const app = express();
 
@@ -48,7 +46,6 @@ app.use('/api/products', productRoutes);
 app.use('/api/product-orders', productOrderRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/invoice-line-items', invoiceLineItemRoutes);
-app.use('/api/invoice-line-items', invoiceLineItemRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello, world!');
@@ -74,5 +71,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-module.exports = app;
