@@ -1,3 +1,4 @@
+// routes/productRoutes.js
 const express = require('express');
 const ProductController = require('../controllers/ProductController');
 

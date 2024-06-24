@@ -1,3 +1,4 @@
+// database.js
 const { Sequelize } = require('sequelize');
 const dotenv = require('dotenv');
 
