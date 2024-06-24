@@ -15,7 +15,6 @@ const invoiceLineItemRoutes = require('./routes/invoiceLineItemRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
 
 const { expressjwt: jwt } = require('express-jwt');
-const jwksRsa = require('jwks-rsa');
 
 const app = express();
 
@@ -26,15 +25,8 @@ app.use(cors({ origin: 'http://your-frontend-domain.com' })); // Adjust the orig
 
 // JWT Authentication middleware
 const jwtCheck = jwt({
-    secret: jwksRsa.expressJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: `https://${process.env.AUTH_DOMAIN}/.well-known/jwks.json`
-    }),
-    audience: process.env.API_AUDIENCE,
-    issuer: `https://${process.env.AUTH_DOMAIN}/`,
-    algorithms: ['RS256']
+    secret: process.env.JWT_SECRET,
+    algorithms: ['HS256']
 });
 
 // Protect routes with JWT middleware
