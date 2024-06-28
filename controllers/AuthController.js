@@ -13,7 +13,7 @@ class AuthController {
 
     async login(req, res) {
         try {
-            const { username, password } = req.body;
+            const { username, password } = req.body; // Notice the change to use username
             const { token } = await userService.login(username, password);
             res.json({ token });
         } catch (error) {
