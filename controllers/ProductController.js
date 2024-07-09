@@ -27,6 +27,9 @@ class ProductController {
     async getProductById(req, res, next) {
         try {
             const productId = parseInt(req.params.id, 10);
+            if (isNaN(productId)) {
+                return res.status(400).json({ error: 'Invalid product ID' });
+            }
             const product = await this.productService.getProductById(productId);
             res.status(200).json(product);
         } catch (error) {
@@ -50,6 +53,19 @@ class ProductController {
             const productId = parseInt(req.params.id, 10);
             await this.productService.deleteProduct(productId);
             res.status(204).send();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async searchProducts(req, res, next) {
+        try {
+            const { code } = req.query;
+            if (!code) {
+                return res.status(400).json({ error: 'Product code is required' });
+            }
+            const products = await this.productService.searchProductsByCode(code);
+            res.status(200).json(products);
         } catch (error) {
             next(error);
         }

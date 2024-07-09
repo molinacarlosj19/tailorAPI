@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const { DataTypes } = require('sequelize');
 
@@ -36,6 +37,9 @@ class ProductService {
     }
 
     async getProductById(productId) {
+        if (isNaN(productId)) {
+            throw new Error('Invalid product ID');
+        }
         const product = await Product.findByPk(productId);
         if (!product) {
             throw new Error('Product not found');
@@ -60,6 +64,17 @@ class ProductService {
             throw new Error('Product not found');
         }
         await product.destroy();
+    }
+
+    async searchProductsByCode(code) {
+        const products = await Product.findAll({
+            where: {
+                product_code: {
+                    [Op.like]: `%${code}%`
+                }
+            }
+        });
+        return products;
     }
 }
 

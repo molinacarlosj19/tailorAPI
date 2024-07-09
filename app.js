@@ -21,7 +21,11 @@ const app = express();
 // Middleware setup
 app.use(bodyParser.json());
 app.use(helmet());
-app.use(cors({ origin: 'http://localhost:4000' })); // Adjust the origin as needed
+app.use(cors({
+    origin: 'http://localhost:4000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 
 // JWT Authentication middleware
 const jwtCheck = jwt({
