@@ -48,6 +48,15 @@ class ProductService {
         return product;
     }
 
+    async getProductsByIds(ids) {
+        const products = await Product.findAll({
+            where: {
+                product_id: ids
+            }
+        });
+        return products;
+    }
+
     async updateProduct(productId, newData) {
         const product = await Product.findByPk(productId);
         if (!product) {
@@ -77,6 +86,7 @@ class ProductService {
         });
         return products;
     }
+
 }
 
 module.exports = ProductService;
