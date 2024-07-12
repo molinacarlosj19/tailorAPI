@@ -38,6 +38,19 @@ class ProductController {
         }
     }
 
+    async getProductsByIds(req, res, next) {
+        try {
+            const { ids } = req.body;
+            if (!Array.isArray(ids)) {
+                return res.status(400).json({ error: 'Invalid request format. Expected an array of IDs.' });
+            }
+            const products = await this.productService.getProductsByIds(ids);
+            res.status(200).json(products);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async updateProduct(req, res, next) {
         try {
             const productId = parseInt(req.params.id, 10);
