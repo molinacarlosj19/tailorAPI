@@ -13,6 +13,8 @@ const productOrderRoutes = require('./routes/productOrderRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const invoiceLineItemRoutes = require('./routes/invoiceLineItemRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
+const { sequelize } = require('./entities'); // Ensure models are imported to setup associations
+
 
 const { expressjwt: jwt } = require('express-jwt');
 
@@ -62,8 +64,10 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Sync the database and start the server
+sequelize.sync().then(() => {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
 });

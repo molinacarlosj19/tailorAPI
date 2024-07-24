@@ -1,12 +1,40 @@
-class Invoice {
-    constructor(invoiceId, invoiceDate, selector, checker, driver, receivedBy) {
-        this.invoiceId = invoiceId;
-        this.invoiceDate = invoiceDate;
-        this.selector = selector;
-        this.checker = checker;
-        this.driver = driver;
-        this.receivedBy = receivedBy;
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const InvoiceLineItem = require('./InvoiceLineItem');
+
+const Invoice = sequelize.define('Invoice', {
+    invoice_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    invoice_date: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    selector: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    checker: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    driver: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    received_by: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
-}
+}, {
+    tableName: 'invoices',
+    timestamps: false
+});
+
+// Define the association with alias
+Invoice.hasMany(InvoiceLineItem, { as: 'lineItems', foreignKey: 'invoice_id' });
+InvoiceLineItem.belongsTo(Invoice, { foreignKey: 'invoice_id' });
 
 module.exports = Invoice;

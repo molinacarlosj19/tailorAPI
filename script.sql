@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS invoice_product_sources CASCADE;
 DROP TABLE IF EXISTS product_order_products CASCADE;
 DROP TABLE IF EXISTS product_orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS invoices CASCADE;
+DROP TABLE IF EXISTS invoice_line_items CASCADE;
 
 -- Create the products table
 CREATE TABLE products (
@@ -21,20 +23,14 @@ CREATE TABLE product_orders (
 );
 
 -- Create the product_order_products table
-CREATE TABLE product_order_products (
+CREATE TABLE IF NOT EXISTS product_order_products (
     product_order_product_id SERIAL PRIMARY KEY,
-    order_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
     expiration_date DATE,
-    CONSTRAINT fk_order
-        FOREIGN KEY(order_id) 
-        REFERENCES product_orders(order_id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_product
-        FOREIGN KEY(product_id) 
-        REFERENCES products(product_id)
-        ON DELETE CASCADE
+    FOREIGN KEY (order_id) REFERENCES product_orders (order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products (product_id) ON DELETE CASCADE
 );
 
 
@@ -48,29 +44,27 @@ CREATE TABLE invoices (
     received_by VARCHAR(255) NOT NULL
 );
 
--- Invoice Line Items Table
-CREATE TABLE invoice_line_items (
+-- Create the invoice line items table
+CREATE TABLE IF NOT EXISTS invoice_line_items (
+    invoice_line_item_id SERIAL PRIMARY KEY,
     invoice_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
-    PRIMARY KEY (invoice_id, product_id),
-    FOREIGN KEY (invoice_id) REFERENCES invoices (invoice_id),
-    FOREIGN KEY (product_id) REFERENCES products (product_id)
+    FOREIGN KEY (invoice_id) REFERENCES invoices (invoice_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products (product_id) ON DELETE CASCADE
 );
-
 
 -- Create new table to track product sources for invoices
-CREATE TABLE invoice_product_sources (
-    invoice_id INTEGER NOT NULL,
-    product_order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS invoice_product_sources (
+    invoice_product_source_id SERIAL PRIMARY KEY,
+    invoice_line_item_id INTEGER NOT NULL,
+    product_order_product_id INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     expiration_date DATE NOT NULL,
-    PRIMARY KEY (invoice_id, product_order_id, product_id),
-    FOREIGN KEY (invoice_id) REFERENCES invoices (invoice_id),
-    FOREIGN KEY (product_order_id) REFERENCES product_orders (order_id),
-    FOREIGN KEY (product_id) REFERENCES products (product_id)
+    FOREIGN KEY (invoice_line_item_id) REFERENCES invoice_line_items (invoice_line_item_id),
+    FOREIGN KEY (product_order_product_id) REFERENCES product_order_products (product_order_product_id)
 );
+
 
 
 -- Sample data manipulation example

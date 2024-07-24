@@ -1,113 +1,91 @@
-const pool = require('../config/database');
+const sequelize = require('../config/database');
 const InvoiceLineItem = require('../entities/InvoiceLineItem');
+const InvoiceProductSource = require('../entities/InvoiceProductSource');
 
 class InvoiceLineItemService {
-    constructor() {
-        this.pool = pool;
-    }
-
     async createInvoiceLineItem(invoiceId, productId, quantity, sources) {
-        const client = await this.pool.connect();
+        const transaction = await sequelize.transaction();
         try {
-            const insertQuery = `
-                INSERT INTO invoice_line_items (invoice_id, product_id, quantity)
-                VALUES ($1, $2, $3) RETURNING invoice_line_item_id
-            `;
-            const values = [invoiceId, productId, quantity];
-            const { rows: [lineItem] } = await client.query(insertQuery, values);
+            const lineItem = await InvoiceLineItem.create({
+                invoice_id: invoiceId,
+                product_id: productId,
+                quantity
+            }, { transaction });
 
             for (const source of sources) {
-                const insertSourceQuery = `
-                    INSERT INTO invoice_product_sources (invoice_line_item_id, product_order_id, product_id, quantity, expiration_date)
-                    VALUES ($1, $2, $3, $4, $5)
-                `;
-                const sourceValues = [lineItem.invoice_line_item_id, source.productOrderId, productId, source.quantity, source.expirationDate];
-                await client.query(insertSourceQuery, sourceValues);
+                await InvoiceProductSource.create({
+                    invoice_line_item_id: lineItem.invoice_line_item_id,
+                    product_order_product_id: source.productOrderProductId,
+                    quantity: source.quantity,
+                    expiration_date: source.expirationDate
+                }, { transaction });
             }
 
-            return new InvoiceLineItem(lineItem.invoice_line_item_id, invoiceId, productId, quantity, sources);
-        } finally {
-            client.release();
+            await transaction.commit();
+            return lineItem;
+        } catch (error) {
+            await transaction.rollback();
+            console.error('Error creating InvoiceLineItem:', error);
+            throw error;
         }
     }
 
     async getInvoiceLineItemById(invoiceLineItemId) {
-        const client = await this.pool.connect();
-        try {
-            const lineItemQuery = 'SELECT * FROM invoice_line_items WHERE invoice_line_item_id = $1';
-            const { rows: [lineItem] } = await client.query(lineItemQuery, [invoiceLineItemId]);
+        const lineItem = await InvoiceLineItem.findByPk(invoiceLineItemId, {
+            include: [InvoiceProductSource] // Assuming InvoiceProductSource is the association
+        });
+        return lineItem;
+    }
 
+    async getAllInvoiceLineItems() {
+        const lineItems = await InvoiceLineItem.findAll({
+            include: [InvoiceProductSource] // Assuming InvoiceProductSource is the association
+        });
+        return lineItems;
+    }
+
+    async updateInvoiceLineItem(invoiceLineItemId, newData) {
+        const transaction = await sequelize.transaction();
+        try {
+            const lineItem = await InvoiceLineItem.findByPk(invoiceLineItemId, { transaction });
             if (!lineItem) {
                 throw new Error('Invoice Line Item not found');
             }
 
-            const sourcesQuery = 'SELECT * FROM invoice_product_sources WHERE invoice_line_item_id = $1';
-            const { rows: sources } = await client.query(sourcesQuery, [invoiceLineItemId]);
+            lineItem.product_id = newData.productId;
+            lineItem.quantity = newData.quantity;
+            await lineItem.save({ transaction });
 
-            return new InvoiceLineItem(lineItem.invoice_line_item_id, lineItem.invoice_id, lineItem.product_id, lineItem.quantity, sources);
-        } finally {
-            client.release();
-        }
-    }
-
-    async getAllInvoiceLineItems() {
-        const client = await this.pool.connect();
-        try {
-            const lineItemsQuery = 'SELECT * FROM invoice_line_items';
-            const { rows: lineItems } = await client.query(lineItemsQuery);
-
-            const invoiceLineItems = [];
-            for (const lineItem of lineItems) {
-                const sourcesQuery = 'SELECT * FROM invoice_product_sources WHERE invoice_line_item_id = $1';
-                const { rows: sources } = await client.query(sourcesQuery, [lineItem.invoice_line_item_id]);
-                invoiceLineItems.push(new InvoiceLineItem(lineItem.invoice_line_item_id, lineItem.invoice_id, lineItem.product_id, lineItem.quantity, sources));
-            }
-
-            return invoiceLineItems;
-        } finally {
-            client.release();
-        }
-    }
-
-    async updateInvoiceLineItem(invoiceLineItemId, newData) {
-        const client = await this.pool.connect();
-        try {
-            const updateQuery = `
-                UPDATE invoice_line_items
-                SET product_id = $1, quantity = $2
-                WHERE invoice_line_item_id = $3
-            `;
-            const values = [newData.productId, newData.quantity, invoiceLineItemId];
-            await client.query(updateQuery, values);
-
-            const deleteSourcesQuery = 'DELETE FROM invoice_product_sources WHERE invoice_line_item_id = $1';
-            await client.query(deleteSourcesQuery, [invoiceLineItemId]);
+            await InvoiceProductSource.destroy({ where: { invoice_line_item_id: invoiceLineItemId }, transaction });
 
             for (const source of newData.sources) {
-                const insertSourceQuery = `
-                    INSERT INTO invoice_product_sources (invoice_line_item_id, product_order_id, product_id, quantity, expiration_date)
-                    VALUES ($1, $2, $3, $4, $5)
-                `;
-                const sourceValues = [invoiceLineItemId, source.productOrderId, newData.productId, source.quantity, source.expirationDate];
-                await client.query(insertSourceQuery, sourceValues);
+                await InvoiceProductSource.create({
+                    invoice_line_item_id: invoiceLineItemId,
+                    product_order_product_id: source.productOrderProductId,
+                    quantity: source.quantity,
+                    expiration_date: source.expirationDate
+                }, { transaction });
             }
 
-            return await this.getInvoiceLineItemById(invoiceLineItemId);
-        } finally {
-            client.release();
+            await transaction.commit();
+            return lineItem;
+        } catch (error) {
+            await transaction.rollback();
+            console.error('Error updating InvoiceLineItem:', error);
+            throw error;
         }
     }
 
     async deleteInvoiceLineItem(invoiceLineItemId) {
-        const client = await this.pool.connect();
+        const transaction = await sequelize.transaction();
         try {
-            const deleteSourcesQuery = 'DELETE FROM invoice_product_sources WHERE invoice_line_item_id = $1';
-            await client.query(deleteSourcesQuery, [invoiceLineItemId]);
-
-            const deleteQuery = 'DELETE FROM invoice_line_items WHERE invoice_line_item_id = $1';
-            await client.query(deleteQuery, [invoiceLineItemId]);
-        } finally {
-            client.release();
+            await InvoiceProductSource.destroy({ where: { invoice_line_item_id: invoiceLineItemId }, transaction });
+            await InvoiceLineItem.destroy({ where: { invoice_line_item_id: invoiceLineItemId }, transaction });
+            await transaction.commit();
+        } catch (error) {
+            await transaction.rollback();
+            console.error('Error deleting InvoiceLineItem:', error);
+            throw error;
         }
     }
 }
