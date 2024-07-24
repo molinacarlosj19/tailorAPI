@@ -4,10 +4,10 @@ const InvoiceLineItemController = require('../controllers/InvoiceLineItemControl
 const router = express.Router();
 const invoiceLineItemController = new InvoiceLineItemController();
 
-router.post('/', (req, res) => invoiceLineItemController.createInvoiceLineItem(req, res));
-router.get('/', (req, res) => invoiceLineItemController.getAllInvoiceLineItems(req, res));
-router.get('/:id', (req, res) => invoiceLineItemController.getInvoiceLineItemById(req, res));
-router.put('/:id', (req, res) => invoiceLineItemController.updateInvoiceLineItem(req, res));
-router.delete('/:id', (req, res) => invoiceLineItemController.deleteInvoiceLineItem(req, res));
+router.post('/', (req, res, next) => invoiceLineItemController.createInvoiceLineItem(req, res, next));
+router.get('/', (req, res, next) => invoiceLineItemController.getAllInvoiceLineItems(req, res, next));
+router.get('/:id', (req, res, next) => invoiceLineItemController.getInvoiceLineItemById(req, res, next));
+router.put('/:id', (req, res, next) => invoiceLineItemController.updateInvoiceLineItem(req, res, next));
+router.delete('/:id', (req, res, next) => invoiceLineItemController.deleteInvoiceLineItem(req, res, next));
 
 module.exports = router;

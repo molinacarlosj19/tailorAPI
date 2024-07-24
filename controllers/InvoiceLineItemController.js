@@ -5,53 +5,53 @@ class InvoiceLineItemController {
         this.invoiceLineItemService = new InvoiceLineItemService();
     }
 
-    async createInvoiceLineItem(req, res) {
+    async createInvoiceLineItem(req, res, next) {
         try {
             const { invoiceId, productId, quantity, sources } = req.body;
             const lineItem = await this.invoiceLineItemService.createInvoiceLineItem(invoiceId, productId, quantity, sources);
             res.status(201).json(lineItem);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error); // Pass the error to the next middleware
         }
     }
 
-    async getInvoiceLineItemById(req, res) {
+    async getInvoiceLineItemById(req, res, next) {
         try {
-            const invoiceLineItemId = parseInt(req.params.id, 10);
-            const lineItem = await this.invoiceLineItemService.getInvoiceLineItemById(invoiceLineItemId);
+            const { id } = req.params;
+            const lineItem = await this.invoiceLineItemService.getInvoiceLineItemById(id);
             res.status(200).json(lineItem);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error); // Pass the error to the next middleware
         }
     }
 
-    async getAllInvoiceLineItems(req, res) {
+    async getAllInvoiceLineItems(req, res, next) {
         try {
             const lineItems = await this.invoiceLineItemService.getAllInvoiceLineItems();
             res.status(200).json(lineItems);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error); // Pass the error to the next middleware
         }
     }
 
-    async updateInvoiceLineItem(req, res) {
+    async updateInvoiceLineItem(req, res, next) {
         try {
-            const invoiceLineItemId = parseInt(req.params.id, 10);
+            const { id } = req.params;
             const newData = req.body;
-            const updatedLineItem = await this.invoiceLineItemService.updateInvoiceLineItem(invoiceLineItemId, newData);
+            const updatedLineItem = await this.invoiceLineItemService.updateInvoiceLineItem(id, newData);
             res.status(200).json(updatedLineItem);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error); // Pass the error to the next middleware
         }
     }
 
-    async deleteInvoiceLineItem(req, res) {
+    async deleteInvoiceLineItem(req, res, next) {
         try {
-            const invoiceLineItemId = parseInt(req.params.id, 10);
-            await this.invoiceLineItemService.deleteInvoiceLineItem(invoiceLineItemId);
+            const { id } = req.params;
+            await this.invoiceLineItemService.deleteInvoiceLineItem(id);
             res.status(204).send();
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error); // Pass the error to the next middleware
         }
     }
 }

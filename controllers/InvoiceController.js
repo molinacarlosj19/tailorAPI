@@ -5,26 +5,26 @@ class InvoiceController {
         this.invoiceService = new InvoiceService();
     }
 
-    async createInvoice(req, res) {
+    async createInvoice(req, res, next) {
         try {
-            const { invoiceDate, selector, checker, driver, receivedBy, products } = req.body;
-            const invoice = await this.invoiceService.createInvoice(invoiceDate, selector, checker, driver, receivedBy, products);
+            const { invoice_date, selector, checker, driver, received_by, lineItems } = req.body;
+            const invoice = await this.invoiceService.createInvoice(invoice_date, selector, checker, driver, received_by, lineItems);
             res.status(201).json(invoice);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    async getAllInvoices(req, res) {
+    async getAllInvoices(req, res, next) {
         try {
             const invoices = await this.invoiceService.getAllInvoices();
             res.status(200).json(invoices);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    async getInvoiceById(req, res) {
+    async getInvoiceById(req, res, next) {
         try {
             const { id } = req.params;
             const invoice = await this.invoiceService.getInvoiceById(id);
@@ -34,11 +34,11 @@ class InvoiceController {
                 res.status(404).json({ message: 'Invoice not found' });
             }
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    async updateInvoice(req, res) {
+    async updateInvoice(req, res, next) {
         try {
             const { id } = req.params;
             const { invoiceDate, selector, checker, driver, receivedBy } = req.body;
@@ -49,17 +49,17 @@ class InvoiceController {
                 res.status(404).json({ message: 'Invoice not found' });
             }
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    async deleteInvoice(req, res) {
+    async deleteInvoice(req, res, next) {
         try {
             const { id } = req.params;
             await this.invoiceService.deleteInvoice(id);
             res.status(204).send();
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 }

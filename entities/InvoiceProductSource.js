@@ -1,28 +1,28 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const ProductOrder = require('./ProductOrder');
-const Product = require('./Product');
+const InvoiceLineItem = require('./InvoiceLineItem');
+const ProductOrderProduct = require('./ProductOrderProduct');
 
-const ProductOrderProduct = sequelize.define('ProductOrderProduct', {
-    product_order_product_id: {
+const InvoiceProductSource = sequelize.define('InvoiceProductSource', {
+    invoice_product_source_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    order_id: {
+    invoice_line_item_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: ProductOrder,
-            key: 'order_id'
+            model: InvoiceLineItem,
+            key: 'invoice_line_item_id'
         }
     },
-    product_id: {
+    product_order_product_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Product,
-            key: 'product_id'
+            model: ProductOrderProduct,
+            key: 'product_order_product_id'
         }
     },
     quantity: {
@@ -34,8 +34,8 @@ const ProductOrderProduct = sequelize.define('ProductOrderProduct', {
         allowNull: false
     }
 }, {
-    tableName: 'product_order_products',
+    tableName: 'invoice_product_sources',
     timestamps: false
 });
 
-module.exports = ProductOrderProduct;
+module.exports = InvoiceProductSource;
