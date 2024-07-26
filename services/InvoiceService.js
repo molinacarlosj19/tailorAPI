@@ -8,39 +8,37 @@ class InvoiceService {
     async createInvoice(invoiceDate, selector, checker, driver, receivedBy, lineItems) {
         const transaction = await sequelize.transaction();
         try {
+            console.log("Received data:", { invoiceDate, selector, checker, driver, receivedBy, lineItems });
+
             const invoice = await Invoice.create({
                 invoice_date: invoiceDate,
-                selector,
-                checker,
-                driver,
+                selector: selector,
+                checker: checker,
+                driver: driver,
                 received_by: receivedBy
             }, { transaction });
 
-            for (const product of lineItems) {
-                let remainingQuantity = product.quantity;
+            for (const item of lineItems) {
+                const { productId, quantity, productSources } = item;
+                let remainingQuantity = quantity;
 
-                const productOrders = await this.getProductOrdersByProductId(product.productId, transaction);
-                for (const productOrder of productOrders) {
-                    if (remainingQuantity <= 0) break;
-                    const quantityToTake = Math.min(remainingQuantity, productOrder.quantity);
+                for (const source of productSources) {
+                    const { orderId, quantity: sourceQuantity, expirationDate } = source;
+                    const quantityToTake = Math.min(remainingQuantity, sourceQuantity);
                     remainingQuantity -= quantityToTake;
 
-                    await InvoiceProductSource.create({
-                        invoice_line_item_id: product.invoice_line_item_id,
-                        product_order_product_id: productOrder.product_order_product_id,
+                    await ProductOrderProduct.create({
+                        order_id: orderId,
+                        product_id: productId,
                         quantity: quantityToTake,
-                        expiration_date: productOrder.expiration_date
-                    }, { transaction });
-
-                    await productOrder.update({
-                        quantity: productOrder.quantity - quantityToTake
+                        expiration_date: expirationDate
                     }, { transaction });
                 }
 
                 await InvoiceLineItem.create({
                     invoice_id: invoice.invoice_id,
-                    product_id: product.productId,
-                    quantity: product.quantity
+                    product_id: productId,
+                    quantity: quantity
                 }, { transaction });
             }
 
