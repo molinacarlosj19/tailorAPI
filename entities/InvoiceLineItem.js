@@ -26,10 +26,6 @@ const InvoiceLineItem = sequelize.define('InvoiceLineItem', {
     quantity: {
         type: DataTypes.INTEGER,
         allowNull: false
-    },
-    productSources: {
-        type: DataTypes.TEXT,
-        allowNull: false
     }
 }, {
     tableName: 'invoice_line_items',

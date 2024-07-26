@@ -7,8 +7,8 @@ class InvoiceController {
 
     async createInvoice(req, res, next) {
         try {
-            const { invoice_date, selector, checker, driver, received_by, lineItems } = req.body;
-            const invoice = await this.invoiceService.createInvoice(invoice_date, selector, checker, driver, received_by, lineItems);
+            const { invoiceDate, selector, checker, driver, receivedBy, lineItems } = req.body;
+            const invoice = await this.invoiceService.createInvoice(invoiceDate, selector, checker, driver, receivedBy, lineItems);
             res.status(201).json(invoice);
         } catch (error) {
             next(error);
