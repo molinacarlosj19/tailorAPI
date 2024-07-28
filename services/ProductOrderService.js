@@ -1,69 +1,8 @@
 // services/ProductOrderService.js
 const sequelize = require('../config/database');
-const { DataTypes } = require('sequelize');
-
-// Define models
-const ProductOrder = sequelize.define('ProductOrder', {
-    order_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    order_date: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    order_number: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    time_in: {
-        type: DataTypes.TIME,
-        allowNull: false
-    },
-    time_out: {
-        type: DataTypes.TIME,
-        allowNull: false
-    }
-}, {
-    tableName: 'product_orders',
-    timestamps: false
-});
-
-const ProductOrderProduct = sequelize.define('ProductOrderProduct', {
-    product_order_product_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    order_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: ProductOrder,
-            key: 'order_id'
-        }
-    },
-    product_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    expiration_date: {
-        type: DataTypes.DATE,
-        allowNull: false
-    }
-}, {
-    tableName: 'product_order_products',
-    timestamps: false
-});
-
-// Establish relationships
-ProductOrder.hasMany(ProductOrderProduct, { foreignKey: 'order_id' });
-ProductOrderProduct.belongsTo(ProductOrder, { foreignKey: 'order_id' });
+const ProductOrder = require('../entities/ProductOrder');
+const ProductOrderProduct = require('../entities/ProductOrderProduct');
+const Product = require('../entities/Product');
 
 class ProductOrderService {
     async createProductOrder(orderDate, orderNumber, timeIn, timeOut, productsData) {
@@ -91,9 +30,14 @@ class ProductOrderService {
     }
 
     async getProductOrderById(orderId) {
+        if (isNaN(orderId)) {
+            throw new Error('Invalid order ID');
+        }
+
         const productOrder = await ProductOrder.findByPk(orderId, {
             include: ProductOrderProduct
         });
+
         if (!productOrder) {
             throw new Error('Order not found');
         }
@@ -105,6 +49,18 @@ class ProductOrderService {
             include: ProductOrderProduct
         });
         return productOrders;
+    }
+
+    async getAllProductOrderProducts() {
+        try {
+            const productOrderProducts = await ProductOrderProduct.findAll({
+                include: [Product],
+            });
+            return productOrderProducts;
+        } catch (error) {
+            console.error('Error fetching product order products:', error.message);
+            throw error;
+        }
     }
 
     async updateProductOrder(orderId, newData) {

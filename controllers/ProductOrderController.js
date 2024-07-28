@@ -1,3 +1,4 @@
+// controllers/ProductOrderController.js
 const ProductOrderService = require('../services/ProductOrderService');
 
 class ProductOrderController {
@@ -18,6 +19,9 @@ class ProductOrderController {
     async getProductOrderById(req, res, next) {
         try {
             const orderId = parseInt(req.params.id, 10);
+            if (isNaN(orderId)) {
+                return res.status(400).json({ error: 'Invalid order ID' });
+            }
             const productOrder = await this.productOrderService.getProductOrderById(orderId);
             res.status(200).json(productOrder);
         } catch (error) {
@@ -37,6 +41,9 @@ class ProductOrderController {
     async updateProductOrder(req, res, next) {
         try {
             const orderId = parseInt(req.params.id, 10);
+            if (isNaN(orderId)) {
+                return res.status(400).json({ error: 'Invalid order ID' });
+            }
             const newData = req.body;
             const updatedProductOrder = await this.productOrderService.updateProductOrder(orderId, newData);
             res.status(200).json(updatedProductOrder);
@@ -48,8 +55,20 @@ class ProductOrderController {
     async deleteProductOrder(req, res, next) {
         try {
             const orderId = parseInt(req.params.id, 10);
+            if (isNaN(orderId)) {
+                return res.status(400).json({ error: 'Invalid order ID' });
+            }
             await this.productOrderService.deleteProductOrder(orderId);
             res.status(204).send();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getAllProductOrderProducts(req, res, next) {
+        try {
+            const productOrderProducts = await this.productOrderService.getAllProductOrderProducts();
+            res.status(200).json(productOrderProducts);
         } catch (error) {
             next(error);
         }
