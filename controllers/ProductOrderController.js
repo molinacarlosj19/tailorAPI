@@ -29,6 +29,19 @@ class ProductOrderController {
         }
     }
 
+    async getProductOrdersByProductId(req, res, next) {
+        try {
+          const productId = parseInt(req.params.productId, 10);
+          if (isNaN(productId)) {
+            return res.status(400).json({ error: 'Invalid product ID' });
+          }
+          const productOrders = await this.productOrderService.getProductOrdersByProductId(productId);
+          res.status(200).json(productOrders);
+        } catch (error) {
+          next(error);
+        }
+      }
+
     async getAllProductOrders(req, res, next) {
         try {
             const productOrders = await this.productOrderService.getAllProductOrders();

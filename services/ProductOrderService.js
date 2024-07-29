@@ -44,6 +44,14 @@ class ProductOrderService {
         return productOrder;
     }
 
+    async getProductOrdersByProductId(productId) {
+        const productOrders = await ProductOrderProduct.findAll({
+          where: { product_id: productId },
+          include: [{ model: ProductOrder }]
+        });
+        return productOrders;
+      }
+
     async getAllProductOrders() {
         const productOrders = await ProductOrder.findAll({
             include: ProductOrderProduct
