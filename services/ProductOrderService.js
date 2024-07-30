@@ -62,9 +62,27 @@ class ProductOrderService {
     async getAllProductOrderProducts() {
         try {
             const productOrderProducts = await ProductOrderProduct.findAll({
-                include: [Product],
+                include: [
+                    {
+                        model: Product,
+                    },
+                    {
+                        model: ProductOrder,
+                        attributes: ['order_number'],
+                    }
+                ],
             });
-            return productOrderProducts;
+    
+            const result = productOrderProducts.map(pop => ({
+                productId: pop.product_id,
+                productCode: pop.Product.product_code,
+                productName: pop.Product.product_name,
+                quantity: pop.quantity,
+                expirationDate: pop.expiration_date,
+                orderNumber: pop.ProductOrder.order_number, // Include order number
+            }));
+    
+            return result;
         } catch (error) {
             console.error('Error fetching product order products:', error.message);
             throw error;
