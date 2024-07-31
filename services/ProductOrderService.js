@@ -47,7 +47,7 @@ class ProductOrderService {
     async getProductOrdersByProductId(productId) {
         const productOrders = await ProductOrderProduct.findAll({
           where: { product_id: productId },
-          include: [{ model: ProductOrder }]
+          include: [{ model: ProductOrder, attributes: ['order_number', 'order_date', 'time_in', 'time_out'] }]
         });
         return productOrders;
       }
