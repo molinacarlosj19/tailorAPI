@@ -1,3 +1,4 @@
+// InvoiceController.js
 const InvoiceService = require('../services/InvoiceService');
 
 class InvoiceController {
@@ -7,8 +8,8 @@ class InvoiceController {
 
     async createInvoice(req, res, next) {
         try {
-            const { invoiceDate, selector, checker, driver, receivedBy, lineItems } = req.body;
-            const invoice = await this.invoiceService.createInvoice(invoiceDate, selector, checker, driver, receivedBy, lineItems);
+            const { invoice_date, selector, checker, driver, received_by, lineItems } = req.body;
+            const invoice = await this.invoiceService.createInvoice(invoice_date, selector, checker, driver, received_by, lineItems);
             res.status(201).json(invoice);
         } catch (error) {
             next(error);
@@ -41,8 +42,8 @@ class InvoiceController {
     async updateInvoice(req, res, next) {
         try {
             const { id } = req.params;
-            const { invoiceDate, selector, checker, driver, receivedBy } = req.body;
-            const invoice = await this.invoiceService.updateInvoice(id, invoiceDate, selector, checker, driver, receivedBy);
+            const { invoice_date, selector, checker, driver, received_by } = req.body;
+            const invoice = await this.invoiceService.updateInvoice(id, invoice_date, selector, checker, driver, received_by);
             if (invoice) {
                 res.status(200).json(invoice);
             } else {

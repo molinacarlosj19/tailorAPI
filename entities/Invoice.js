@@ -1,3 +1,4 @@
+// Invoice.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const InvoiceLineItem = require('./InvoiceLineItem');
@@ -33,7 +34,6 @@ const Invoice = sequelize.define('Invoice', {
     timestamps: false
 });
 
-// Define the association with alias
 Invoice.hasMany(InvoiceLineItem, { as: 'lineItems', foreignKey: 'invoice_id' });
 InvoiceLineItem.belongsTo(Invoice, { foreignKey: 'invoice_id' });
 
